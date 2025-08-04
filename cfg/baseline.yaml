@@ -1,0 +1,15 @@
+env:
+  size: [6, 6]
+  obstacles: 3
+  max_steps: 100
+  seed: 0
+
+agent:
+  algo: q_learning       # matches apr/agents/q_learning.py
+  alpha: 0.1
+  gamma: 0.95
+  epsilon: 0.3
+
+train:
+  episodes: 3000
+  log_every: 500

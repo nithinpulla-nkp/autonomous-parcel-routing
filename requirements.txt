@@ -1,0 +1,18 @@
+# ---------------------  runtime  ---------------------
+gymnasium==0.29.1          # Env API
+numpy==1.26.4              # Vector maths
+pandas==2.2.2              # Metrics & CSV
+matplotlib==3.8.4          # Plots / notebook viz
+PyYAML==6.0.1              # Read cfg/*.yaml
+
+# ---------------------  optional RL extras -----------
+# torch==2.2.2             # uncomment when you add neural agents (PPO, etc.)
+# stable-baselines3==2.3.0 # only needed for deep RL baselines
+
+# ---------------------  dev / tooling  ---------------
+black==24.4, <25.0              # code formatter
+flake8==7.0.0              # linter
+pytest==8.0.1              # unit tests
+nbconvert==7.16.4          # run notebooks headless in CI
+jupytext==1.16.2           # .ipynb ⇄ .py sync
+pre-commit==3.6.2          # git hooks
