@@ -1,0 +1,25 @@
+[project]
+name = "autonomous-parcel-routing"
+version = "0.1.0"
+description = "Reinforcement learning agents for autonomous parcel routing in warehouse environments"
+authors = [
+    { name = "Your Name", email = "your.email@example.com" }
+]
+readme = "README.md"
+requires-python = ">=3.9"
+
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "pandas",
+    "tqdm",
+    "gymnasium",
+    "torch",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

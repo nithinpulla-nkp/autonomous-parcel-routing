@@ -31,3 +31,46 @@ python -m wprl.train --config cfg/baseline.yaml --algo ppo --episodes 10000
 
 # 3. Evaluate & render
 python -m wprl.evaluate checkpoints/ppo_latest.pt --render --gif out/ppo_run.gif
+
+
+
+# codeflow for understanding
+                                  ┌───────────────────┐
+                                  │ Configuration     │
+                                  │ (baseline.yaml)   │
+                                  └─────────┬─────────┘
+                                            │
+                                            ▼
+┌───────────────────┐             ┌───────────────────┐
+│ Logging           │◄────────────┤ Training Loop     │
+│ (logger.py)       │             │ (train.py)        │
+└─────────┬─────────┘             └─────────┬─────────┘
+          │                                  │
+          │                                  │
+          │                                  │ Runs episodes
+          │                        ┌─────────┴─────────┐
+          │                        │                   │
+          │                        ▼                   ▼
+          │         ┌───────────────────┐   ┌───────────────────┐
+          │         │ Environment       │   │ Agent             │
+Saves     │         │ (env.py)          │◄──┤ (q_learning.py)   │
+metrics   │         └─────────┬─────────┘   └─────────┬─────────┘
+& config  │                   │                       │
+          │                   │ State,                │ 
+          │                   │ Reward,               │ Action
+          │                   │ Done                  │
+          │                   │                       │
+          │                   ▼                       │
+          │         ┌───────────────────┐            │
+          │         │ Warehouse Grid    │            │
+          │         │ with obstacles,   │◄───────────┘
+          │         │ pickup, dropoff   │
+          │         └───────────────────┘
+          │
+          ▼
+┌───────────────────┐
+│ Outputs           │
+│ - metrics.csv     │
+│ - config.yaml     │
+│ - checkpoints     │
+└───────────────────┘
