@@ -20,8 +20,8 @@ def verify_apr_imports():
         print("✅ RunLogger")
         
         # Agents
-        from apr.agents import QLearningAgent
-        print("✅ QLearningAgent")
+        from apr.agents import BaseAgent, QLearningAgent, create_agent
+        print("✅ BaseAgent, QLearningAgent, create_agent")
         
         # Training module
         from apr import train

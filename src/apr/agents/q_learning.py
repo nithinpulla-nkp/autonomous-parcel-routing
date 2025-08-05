@@ -1,13 +1,22 @@
-import random, pickle
+import random
 import numpy as np
 from collections import defaultdict
+from typing import Tuple, Union
+from pathlib import Path
 
-class QLearningAgent:
-    """Plain ε-greedy Q-Learning for discrete states & actions."""
+from .base import TabularAgent
+
+
+class QLearningAgent(TabularAgent):
+    """
+    Q-Learning agent with ε-greedy exploration for discrete states & actions.
+    
+    Implements the classic off-policy temporal difference learning algorithm.
+    """
 
     def __init__(
         self,
-        obs_space,                  # unused but keeps signature generic
+        obs_space,
         act_space: int,
         alpha: float = 0.1,
         gamma: float = 0.95,
@@ -15,44 +24,100 @@ class QLearningAgent:
         epsilon_decay: float = 0.999,
         epsilon_min: float = 0.05,
     ):
-        self.n_actions = act_space
-        self.alpha = alpha
-        self.gamma = gamma
-        self.epsilon = epsilon
-        self.epsilon_decay = epsilon_decay
-        self.epsilon_min = epsilon_min
+        super().__init__(obs_space, act_space, alpha, gamma, epsilon, epsilon_decay, epsilon_min)
         self.Q = defaultdict(lambda: np.zeros(self.n_actions, dtype=float))
 
     # ------------------------------------------------------------------ #
 
-    def act(self, state, training: bool = True) -> int:
+    def act(self, state: Tuple[int, int], training: bool = True) -> int:
+        """
+        Choose action using ε-greedy policy.
+        
+        Args:
+            state: Current state (row, col)
+            training: Whether in training mode (affects exploration)
+            
+        Returns:
+            Action index (0-3)
+        """
         if training and random.random() < self.epsilon:
             return random.randrange(self.n_actions)
         return int(np.argmax(self.Q[state]))
 
-    def learn(self, s, a, r, s2, done):
-        best_next = np.max(self.Q[s2])
-        target = r + (0 if done else self.gamma * best_next)
-        self.Q[s][a] += self.alpha * (target - self.Q[s][a])
+    def learn(
+        self, 
+        state: Tuple[int, int], 
+        action: int, 
+        reward: float, 
+        next_state: Tuple[int, int], 
+        done: bool
+    ) -> None:
+        """
+        Update Q-values using Q-Learning update rule.
+        
+        Q(s,a) ← Q(s,a) + α[r + γ max Q(s',a') - Q(s,a)]
+        
+        Args:
+            state: Current state
+            action: Action taken
+            reward: Reward received
+            next_state: Next state reached
+            done: Whether episode ended
+        """
+        best_next = np.max(self.Q[next_state])
+        target = reward + (0 if done else self.gamma * best_next)
+        self.Q[state][action] += self.alpha * (target - self.Q[state][action])
 
-        if done:                                 # decay ε once per episode
-            self.epsilon = max(self.epsilon * self.epsilon_decay,
-                                self.epsilon_min)
+        if done:
+            self.decay_epsilon()
 
-    # ------------------------------------------------------------------ #
-    # Persistence                                                        #
-    # ------------------------------------------------------------------ #
-
-    def save(self, path):
+    def save(self, path: Union[str, Path]) -> None:
+        """
+        Save Q-Learning agent to disk.
+        
+        Args:
+            path: File path to save the agent
+        """
+        agent_data = {
+            'q_table': dict(self.Q),
+            'hyperparameters': self.get_hyperparameters(),
+            'n_actions': self.n_actions
+        }
+        
+        import pickle
         with open(path, "wb") as f:
-            pickle.dump(dict(self.Q), f)
+            pickle.dump(agent_data, f)
 
     @classmethod
-    def load(cls, path):
+    def load(cls, path: Union[str, Path]) -> 'QLearningAgent':
+        """
+        Load Q-Learning agent from disk.
+        
+        Args:
+            path: File path to load the agent from
+            
+        Returns:
+            Loaded QLearningAgent instance
+        """
+        import pickle
         with open(path, "rb") as f:
-            q_table = pickle.load(f)
-        # infer action dim from first row
-        n_actions = len(next(iter(q_table.values())))
-        agent = cls(obs_space=None, act_space=n_actions)
-        agent.Q = defaultdict(lambda: np.zeros(n_actions, dtype=float), q_table)
+            agent_data = pickle.load(f)
+        
+        # Handle both old and new save formats
+        if isinstance(agent_data, dict) and 'q_table' in agent_data:
+            # New format
+            q_table = agent_data['q_table']
+            n_actions = agent_data['n_actions']
+            hyperparams = agent_data.get('hyperparameters', {})
+        else:
+            # Old format (backward compatibility)
+            q_table = agent_data
+            n_actions = len(next(iter(q_table.values())))
+            hyperparams = {}
+        
+        # Create agent instance
+        agent = cls(obs_space=None, act_space=n_actions, **hyperparams)
+        agent.Q = defaultdict(lambda: np.zeros(n_actions, dtype=float))
+        agent.Q.update(q_table)
+        
         return agent

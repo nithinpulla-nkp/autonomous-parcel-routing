@@ -1,9 +1,10 @@
-import argparse, importlib
+import argparse
 from pathlib import Path
 import yaml
 
 from apr.env import WarehouseEnv
 from apr.logger import RunLogger
+from apr.agents import create_agent, list_available_agents
 
 # ------------------------------------------------------------------ #
 
@@ -32,17 +33,22 @@ def main():
     # 1) Environment
     env = WarehouseEnv(**cfg["env"])
 
-    # 2) Agent (dynamic import so you can swap algos later)
+    # 2) Agent (using registry for clean algorithm lookup)
     algo = cfg["agent"]["algo"]
-    mod = importlib.import_module(f"apr.agents.{algo}")
-    AgentCls = getattr(mod, f"{algo.split('_')[0].capitalize()}LearningAgent")
-    agent = AgentCls(
-        env.observation_space,
-        env.action_space,
-        alpha=cfg["agent"]["alpha"],
-        gamma=cfg["agent"]["gamma"],
-        epsilon=cfg["agent"]["epsilon"],
-    )
+    try:
+        agent = create_agent(
+            algo,
+            env.observation_space,
+            env.action_space,
+            alpha=cfg["agent"]["alpha"],
+            gamma=cfg["agent"]["gamma"],
+            epsilon=cfg["agent"]["epsilon"],
+        )
+    except ValueError as e:
+        available = list_available_agents()
+        print(f"Error: {e}")
+        print(f"Available algorithms: {', '.join(available)}")
+        return
 
     # 3) Logger
     logger = RunLogger(cfg, tag=algo)
