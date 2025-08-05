@@ -8,12 +8,18 @@ replacing the fragile dynamic import system in train.py.
 from typing import Dict, Type
 from .base import BaseAgent
 from .q_learning import QLearningAgent
+from .double_q_learning import DoubleQLearningAgent
+from .sarsa import SarsaAgent, SarsaLambdaAgent
 
 
 # Global registry mapping algorithm names to agent classes
 AGENT_REGISTRY: Dict[str, Type[BaseAgent]] = {
     'q_learning': QLearningAgent,
     'qlearning': QLearningAgent,  # Alternative spelling
+    'double_q_learning': DoubleQLearningAgent,
+    'double_qlearning': DoubleQLearningAgent,  # Alternative spelling
+    'sarsa': SarsaAgent,
+    'sarsa_lambda': SarsaLambdaAgent,
 }
 
 

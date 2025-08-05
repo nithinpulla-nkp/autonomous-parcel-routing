@@ -207,3 +207,4 @@ marimo/_lsp/
 __marimo__/
 .apr_venv/
 /outputs
+.DS_Store
