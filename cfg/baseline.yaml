@@ -1,0 +1,15 @@
+env:
+  size: [6, 6]
+  max_steps: 200
+  seed: 0
+  layout: "default"
+
+agent:
+  algo: q_learning
+  alpha: 0.1
+  gamma: 0.95
+  epsilon: 0.3
+
+train:
+  episodes: 1000
+  log_every: 200
